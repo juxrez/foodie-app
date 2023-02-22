@@ -2,6 +2,7 @@
 @using FoodieApp.Shared.Models
 @using System.Diagnostics.CodeAnalysis
 @inject HttpClient Http
+
 <PageTitle>List of foods</PageTitle>
 <h3>Foods</h3>
 
@@ -15,7 +16,7 @@ else
         @foreach (var food in foods)
         {
             <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
-                <Card @onclick="@(e => OnClicked(@food.Id))" IsShadow="true" IsCenter="true">
+                <Card @onclick="@(e => OnClicked(@food.Id, food.Name))" IsShadow="true" IsCenter="true">
                     <BodyTemplate>
                         <h5>@food.Name</h5>
                         <ImageViewer Url="@food.Image"
@@ -42,19 +43,33 @@ else
 
     private bool IsKeyboard { get; set; }
 
-    private async Task OnClicked(int foodId)
+    private async Task OnClicked(int foodId, string foodName)
     {
-        var food = await Http.GetFromJsonAsync<Food>($"foods/{foodId}");
-        await DialogService.Show(new DialogOption()
+        var options = new DialogOption
         {
-            IsKeyboard = IsKeyboard,
-            Title = food.Name,
-            BodyTemplate = BootstrapDynamicComponent.CreateComponent<Button>(new Dictionary<string, object?>
-            {
-                [nameof(Button.ChildContent)] = new RenderFragment(builder => builder.AddContent(0, "Button")),
-                [nameof(Button.ChildContent)] = new RenderFragment(builder => builder.AddContent(1, "Button")),
-            }).Render()
+            Title = foodName,
+            BodyContext = foodId,
+            
+            
+        };
+        options.Component = BootstrapDynamicComponent.CreateComponent<FoodDialog>(new Dictionary<string, object?>()
+        {
+            [nameof(FoodDialog.FoodId)] = foodId
         });
+        options.IsScrolling = true;
+        await DialogService.Show(options);
+
+        //await DialogService.Show(new DialogOption()
+        //{
+        //    IsKeyboard = IsKeyboard,
+        //    Title = food.Name,
+        //    BodyTemplate = builder =>
+        //    {
+        //        var index = 1;
+        //        builder.OpenComponent<FoodDialog>(index);
+        //        builder.
+        //    }
+        //});
     }
 
     private void OnClickKeyboard()
@@ -66,5 +81,4 @@ else
     {
         foods = await Http.GetFromJsonAsync<Food[]>("foods/async");
     }
-
 }

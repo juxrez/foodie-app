@@ -1,0 +1,79 @@
+﻿@using FoodieApp.Shared.Models
+@using Console = System.Console
+@inject HttpClient Client
+
+@if (Food is null)
+{
+    <div class="d-flex justify-content-center">
+        <Spinner Color="Color.Info"></Spinner>
+    </div>
+}
+else if (HasError)
+{
+
+}
+else
+{
+    <Tab>
+        <TabItem Text="Details">
+            <div class="justify-content-center d-block">
+                <div class="d-flex justify-content-center position-relative">
+                    <ImageViewer Url="@Food.Image" FitMode="ObjectFitMode.Cover"/>
+                </div>
+                <div class="d-flex justify-content-center position-relative">
+                    @Food.Description
+                </div>
+            </div>
+        </TabItem>
+        <TabItem Text="Reviews">
+            <div class="justify-content-center d-block">
+                <div class="d-flex">
+                    <p>Average:</p>
+                    @for (int i = 0; i <= @Food.AverageStars; i++)
+                    {
+                        <i class="fa-solid fa-star" style="font-size: 1em; margin: .3em; color: orange" aria-hidden="true"></i>
+                    }
+                </div>
+                <div class="justify-content-center">
+                    @foreach (var review in Food.Reviews)
+                    {
+                        <Card IsCollapsible="true" HeaderText=@review.User.Name>
+                            <BodyTemplate>
+                                <p>@review.Comments</p>
+                                @for (int i = 0; i <= @review.Stars; i++)
+                                {
+                                    <i class="fa-solid fa-star" style="font-size: 1em; margin: .3em; color: orange" aria-hidden="true"></i>
+                                }
+                            </BodyTemplate>
+                        </Card>
+                    }
+                </div>
+
+            </div>
+            
+        </TabItem>
+    </Tab>
+    
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public int FoodId { get; set; }
+
+    public Food? Food { get; set; }
+    public bool HasError { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            Food = await Client.GetFromJsonAsync<Food>($"foods/{FoodId}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+}

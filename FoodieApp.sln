@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodieApp.Client", "FoodieA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodieApp.Shared", "FoodieApp\Shared\FoodieApp.Shared.csproj", "{A3A958CA-55A3-46CC-B14A-F4F54A273FCA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodieApp.Server.Tests", "FoodieApp.Server.Tests\FoodieApp.Server.Tests.csproj", "{F40370EC-C025-490E-BB16-155AD30030AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{A3A958CA-55A3-46CC-B14A-F4F54A273FCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3A958CA-55A3-46CC-B14A-F4F54A273FCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3A958CA-55A3-46CC-B14A-F4F54A273FCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F40370EC-C025-490E-BB16-155AD30030AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F40370EC-C025-490E-BB16-155AD30030AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F40370EC-C025-490E-BB16-155AD30030AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F40370EC-C025-490E-BB16-155AD30030AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
