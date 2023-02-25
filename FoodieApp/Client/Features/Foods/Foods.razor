@@ -39,7 +39,7 @@ else
     [NotNull]
     private DialogService? DialogService { get; set; }
 
-    private Food[]? foods;
+    private MealViewModel[]? foods;
 
     private bool IsKeyboard { get; set; }
 
@@ -79,6 +79,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        foods = await Http.GetFromJsonAsync<Food[]>("foods/async");
+        foods = await Http.GetFromJsonAsync<MealViewModel[]>("foods/async");
     }
 }

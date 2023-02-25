@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FoodieApp.Shared.Models
+﻿namespace FoodieApp.Shared.Models
 {
-    public class Food
+    public class MealViewModel
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -15,7 +9,7 @@ namespace FoodieApp.Shared.Models
         public DateTime CookDate { get; set; }
         public double AverageStars { get; set; }
 
-        public User Cooker { get; set; }
-        public List<Review> Reviews { get; set; }
+        public UserViewModel Cooker { get; set; }
+        public List<ReviewViewModel> Reviews { get; set; }
     }
 }

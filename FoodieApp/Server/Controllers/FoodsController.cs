@@ -16,21 +16,21 @@ namespace FoodieApp.Server.Controllers
 
         // GET all foods
         [HttpGet("async")]
-        public async Task<ActionResult<List<Food>>> GetAsync()
+        public async Task<ActionResult<List<MealViewModel>>> GetAsync()
         {
             var foods = await GetFoods();
             return Ok(foods);
         }
 
         [HttpGet]
-        public async Task<List<Food>> GetAllFoods()
+        public async Task<List<MealViewModel>> GetAllFoods()
         {
             return await GetFoods();
         }
 
         // GET food by ID
         [HttpGet("{id}")]
-        public async Task<ActionResult<Food>> Get(int id)
+        public async Task<ActionResult<MealViewModel>> Get(int id)
         {
             var foods = await GetFoods();
             var food = foods.FirstOrDefault(f => f.Id == id);
@@ -60,9 +60,9 @@ namespace FoodieApp.Server.Controllers
         {
         }
 
-        private Task<List<Food>> GetFoods()
+        private Task<List<MealViewModel>> GetFoods()
         {
-            var foods = new List<Food>()
+            var foods = new List<MealViewModel>()
             {
                 new()
                 {
@@ -70,25 +70,25 @@ namespace FoodieApp.Server.Controllers
                     Name = "Arroz Chaufa",
                     CookDate = DateTime.Today.AddDays(-2),
                     Description = "Arrocito con soya, pollo y verduras",
-                    Cooker = new User() { Id = 1, Name = "Alexis"},
+                    Cooker = new UserViewModel() { Id = 1, Name = "Alexis"},
                     Image = "https://www.tqma.com.ec/images/com_yoorecipe/banner_superior/16330_1.jpg",
-                    Reviews = new List<Review>()
+                    Reviews = new List<ReviewViewModel>()
                     {
-                        new Review()
+                        new ReviewViewModel()
                         {
                             Id = 1,
                             Comments = "Weeeno",
                             CreatedDate = DateTime.Today.AddDays(-1),
                             Stars = 5,
-                            User = new User() { Id = 1, Name = "Alexis"},
+                            User = new UserViewModel() { Id = 1, Name = "Alexis"},
                         },
-                        new Review()
+                        new ReviewViewModel()
                         {
                             Id = 2,
                             Comments = "Estuvo bien",
                             CreatedDate = DateTime.Today.AddDays(-1),
                             Stars = 5,
-                            User = new User() { Id = 2, Name = "Camila"},
+                            User = new UserViewModel() { Id = 2, Name = "Camila"},
                         }
                     }
                 },
@@ -98,25 +98,25 @@ namespace FoodieApp.Server.Controllers
                     Name = "Salchipulpos con papas",
                     CookDate = DateTime.Today.AddDays(-3),
                     Description = "Salchipulpos en air fryer con camarones",
-                    Cooker = new User() { Id = 1, Name = "Alexis"},
+                    Cooker = new UserViewModel() { Id = 1, Name = "Alexis"},
                     Image = "https://www.cardamomo.news/__export/1654123030420/sites/debate/img/2022/06/01/pulpitos_de_salchicha.png_976912859.png",
-                    Reviews = new List<Review>()
+                    Reviews = new List<ReviewViewModel>()
                     {
-                        new Review()
+                        new ReviewViewModel()
                         {
                             Id = 3,
                             Comments = "Estuvo salao",
                             CreatedDate = DateTime.Today.AddDays(-3),
                             Stars = 2,
-                            User = new User() { Id = 1, Name = "Alexis"},
+                            User = new UserViewModel() { Id = 1, Name = "Alexis"},
                         },
-                        new Review()
+                        new ReviewViewModel()
                         {
                             Id = 4,
                             Comments = "Mas o menos, no estuv tan mal",
                             CreatedDate = DateTime.Today.AddDays(-3),
                             Stars = 3,
-                            User = new User() { Id = 2, Name = "Camila"},
+                            User = new UserViewModel() { Id = 2, Name = "Camila"},
                         }
                     }
                 },
@@ -126,17 +126,17 @@ namespace FoodieApp.Server.Controllers
                     Name = "Pollo con pure",
                     CookDate = DateTime.Today.AddDays(-2),
                     Description = "Pollo en air fryer con pure de papas",
-                    Cooker = new User() { Id = 2, Name = "Camila"},
+                    Cooker = new UserViewModel() { Id = 2, Name = "Camila"},
                     Image = "https://img-global.cpcdn.com/recipes/c8e905129f12fcbb/680x482cq70/jamoncitos-de-pollo-especiados-en-la-freidora-de-aire-airfryer-foto-principal.jpg",
-                    Reviews = new List<Review>()
+                    Reviews = new List<ReviewViewModel>()
                     {
-                        new Review()
+                        new ReviewViewModel()
                         {
                             Id = 5,
                             Comments = "Bien, mucha leche en el pure",
                             CreatedDate = DateTime.Today.AddDays(-1),
                             Stars = 4,
-                            User = new User() { Id = 1, Name = "Alexis"},
+                            User = new UserViewModel() { Id = 1, Name = "Alexis"},
                         }
                     }
                 }

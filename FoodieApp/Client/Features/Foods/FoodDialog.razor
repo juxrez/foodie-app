@@ -61,14 +61,14 @@ else
     [EditorRequired]
     public int FoodId { get; set; }
 
-    public Food? Food { get; set; }
+    public MealViewModel? Food { get; set; }
     public bool HasError { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
         try
         {
-            Food = await Client.GetFromJsonAsync<Food>($"foods/{FoodId}");
+            Food = await Client.GetFromJsonAsync<MealViewModel>($"foods/{FoodId}");
         }
         catch (Exception e)
         {
