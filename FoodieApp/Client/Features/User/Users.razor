@@ -1,0 +1,37 @@
+﻿@page "/users"
+@inject HttpClient Http
+
+<h3 style="margin:50px40px">Users</h3>
+
+@if(users is null)
+{
+   <Loading/>
+}
+else
+{
+    <Row ItemsPerRow="ItemsPerRow.Three">
+        @foreach(var user in users)
+        {
+            <Card IsCenter="true">
+                <BodyTemplate>
+                    <h5>@user.Name</h5>
+                    <Avatar Url="@user.Image" IsCircle="true" Size="Size.ExtraExtraLarge" />
+                    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                    <a class="btn btn-primary">Go somewhere</a>
+                </BodyTemplate>
+                <FooterTemplate>
+                    2 days ago
+                </FooterTemplate>
+            </Card>
+        }
+    </Row>
+}
+
+@code {
+    private List<UserViewModel>? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await Http.GetFromJsonAsync<List<UserViewModel>>("users/async") ?? null;
+    }
+}

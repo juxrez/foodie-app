@@ -1,5 +1,10 @@
-﻿using FoodieApp.Shared.Models;
+﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
+using FoodieApp.Server.Domain.Interfaces.Services;
+using FoodieApp.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection.Metadata;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -7,34 +12,58 @@ namespace FoodieApp.Server.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class FoodsController : ControllerBase
+    public class MealsController : ControllerBase
     {
-        public FoodsController()
+        private const string BLOB_KEY = "Blob";
+        private const string BLOB_CONTAINER_NAME = "alexiscontainer";
+        private readonly IConfiguration _config;
+        private readonly IMealService _mealService;
+
+        public MealsController(IConfiguration config, IMealService mealService)
         {
-                
+           _config= config;
+            _mealService = mealService;
         }
 
         // GET all foods
         [HttpGet("async")]
         public async Task<ActionResult<List<MealViewModel>>> GetAsync()
         {
-            var foods = await GetFoods();
-            return Ok(foods);
+            try
+            {
+                var foods = await _mealService.GetAllAsync();
+                return foods;
+
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest();
+            }
         }
 
         [HttpGet]
-        public async Task<List<MealViewModel>> GetAllFoods()
+        public async Task<ActionResult<List<MealViewModel>>> GetAllFoods()
         {
-            return await GetFoods();
+            try
+            {
+                var foods = await _mealService.GetAllAsync();
+                return await GetFoods();
+
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest();
+            }
         }
 
         // GET food by ID
         [HttpGet("{id}")]
         public async Task<ActionResult<MealViewModel>> Get(int id)
         {
-            var foods = await GetFoods();
-            var food = foods.FirstOrDefault(f => f.Id == id);
-            if (food == null)
+            var food = await _mealService.GetAsync(id);
+            if (food is null)
             {
                 return NotFound();
             }
@@ -43,9 +72,83 @@ namespace FoodieApp.Server.Controllers
         }
 
         // POST api/<ValuesController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+        //Test why is not hitting this endpoint
+
+        [HttpPost("add")]
+        public async Task<ActionResult> AddMeal(MealViewModel newMeal)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.ValidationState.ToString());
+            }
+
+            try
+            {
+                await _mealService.Add(newMeal);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpPost("image")]
+        public async Task<ActionResult<string>> UploadImage()
+        {
+            try
+            {
+                var formFile = Request.Form.Files.FirstOrDefault();
+                if (formFile == null || formFile.Length == 0)
+                {
+                    return BadRequest();
+                }
+
+                string url = string.Empty;
+
+                var containerClient = new BlobContainerClient(
+                    _config[BLOB_KEY], BLOB_CONTAINER_NAME);
+
+                var blobClient = containerClient.GetBlobClient(formFile.Name);
+
+                var response = await blobClient.UploadAsync(formFile.OpenReadStream(),
+                    //HTTP headers to treat the blob
+                    new BlobHttpHeaders()
+                    {
+                        ContentType = formFile.ContentType,
+                        CacheControl = "public"
+                    },
+                    //metadata to associate with the blob
+                    new Dictionary<string, string>() { { "customName", formFile.Name } }
+                    );
+
+                //GET URL
+                //BlobSasBuilder builder = new BlobSasBuilder
+                //{
+                //    BlobContainerName = containerClient.Name,
+                //    BlobName = blobClient.Name,
+                //    ExpiresOn = DateTime.UtcNow.AddMinutes(2),
+                //    Protocol = SasProtocol.Https
+                //};
+                //builder.SetPermissions(BlobSasPermissions.Read);
+
+                //UriBuilder uBuilder = new UriBuilder(blobClient.Uri);
+                //uBuilder.Query = builder.ToSasQueryParameters(
+                //    new Azure.Storage.StorageSharedKeyCredential(
+                //        containerClient.AccountName,
+                //        _config[BLOB_KEY]
+                //    )).ToString();
+
+                url = blobClient.Uri.ToString();
+
+                return Ok(url);
+            }
+            catch (Exception ex)
+            {
+                return Ok("");
+                throw;
+            }
+            
         }
 
         // PUT api/<ValuesController>/5

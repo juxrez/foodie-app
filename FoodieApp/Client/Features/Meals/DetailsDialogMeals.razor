@@ -68,7 +68,7 @@ else
     {
         try
         {
-            Food = await Client.GetFromJsonAsync<MealViewModel>($"foods/{FoodId}");
+            Food = await Client.GetFromJsonAsync<MealViewModel>($"meals/{FoodId}");
         }
         catch (Exception e)
         {

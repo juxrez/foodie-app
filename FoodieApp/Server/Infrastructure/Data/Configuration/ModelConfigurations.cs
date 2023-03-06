@@ -18,6 +18,17 @@ namespace FoodieApp.Server.Infrastructure.Data.Configuration
                 .WithOne(c => c.Meal)
                 .HasForeignKey(c => c.MealId);
 
+            builder
+                .HasOne(m => m.User)
+                .WithMany(c => c.Meals).
+                OnDelete(DeleteBehavior.NoAction)
+                .HasForeignKey(c => c.UserId);
+
+            builder
+                .HasOne(m => m.Group)
+                .WithMany(g => g.Meals)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasForeignKey(g => g.GroupId);
         }
     }
 
@@ -48,6 +59,39 @@ namespace FoodieApp.Server.Infrastructure.Data.Configuration
             //    .Property(c => c.UserId).IsRequired(false);
 
            
+        }
+    }
+
+    public class GroupConfiguration : IEntityTypeConfiguration<Group>
+    {
+        public void Configure(EntityTypeBuilder<Group> builder)
+        {
+            builder
+                .HasMany(g => g.Meals)
+                .WithOne(m => m.Group)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasForeignKey(m => m.GroupId);
+        }
+    }
+
+    public class GroupUserConfiguration : IEntityTypeConfiguration<GroupUser>
+    {
+        public void Configure(EntityTypeBuilder<GroupUser> builder)
+        {
+            builder
+                .HasKey(gu => new { gu.UserId, gu.GroupId });
+
+            builder.
+                HasOne(u => u.User)
+                .WithMany(gu => gu.GroupUsers)
+                .HasForeignKey(gu => gu.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder
+                .HasOne(c => c.Group)
+                .WithMany(gu => gu.GroupUsers)
+                .HasForeignKey(gu => gu.GroupId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

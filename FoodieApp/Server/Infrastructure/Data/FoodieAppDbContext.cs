@@ -1,6 +1,5 @@
 ﻿using FoodieApp.Server.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using FoodieApp.Server.Infrastructure.Data.Configuration;
 using System.Reflection;
 
 namespace FoodieApp.Server.Infrastructure.Data
@@ -16,6 +15,8 @@ namespace FoodieApp.Server.Infrastructure.Data
         public DbSet<User> User { get; set; }
         public DbSet<Review> Review { get; set; }
         public DbSet<Comment> Comment { get; set; }
+        public DbSet<Group> Group { get; set; }
+        public DbSet<GroupUser> GroupUsers { get; set; }
 
         /// <summary>
         /// Fluent API configurations

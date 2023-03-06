@@ -1,13 +1,9 @@
 ﻿using FoodieApp.Server.Domain.Entities;
+using FoodieApp.Shared.Models;
 
 namespace FoodieApp.Server.Domain.Interfaces.Services
 {
-    public interface IMealService
+    public interface IMealService : IGenericService<MealViewModel>
     {
-        Task<Meal> GetMeal(int id);
-        Task<List<Meal>> GetMeals();
-        Task DeleteMeal(int id);
-        Task AddMeal(Meal meal);
-        Task<Meal> UpdateMeal(Meal meal);
     }
 }

@@ -8,7 +8,8 @@ namespace FoodieApp.Server.Application.Mapping
     {
         public UserProfile()
         {
-            CreateMap<User, UserViewModel>();
+            CreateMap<User, UserViewModel>()
+                .ReverseMap();
 
         //    CreateMap<User, UserViewModel>()
         //.ForMember(dest =>

@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33103.184
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodieApp.Server", "FoodieApp\Server\FoodieApp.Server.csproj", "{CB646B11-148B-4257-BE42-276FBAECC9F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FoodieApp.Server", "FoodieApp\Server\FoodieApp.Server.csproj", "{CB646B11-148B-4257-BE42-276FBAECC9F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodieApp.Client", "FoodieApp\Client\FoodieApp.Client.csproj", "{ED4B929B-0E7B-4554-BE34-53DB46684A49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FoodieApp.Client", "FoodieApp\Client\FoodieApp.Client.csproj", "{ED4B929B-0E7B-4554-BE34-53DB46684A49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodieApp.Shared", "FoodieApp\Shared\FoodieApp.Shared.csproj", "{A3A958CA-55A3-46CC-B14A-F4F54A273FCA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FoodieApp.Shared", "FoodieApp\Shared\FoodieApp.Shared.csproj", "{A3A958CA-55A3-46CC-B14A-F4F54A273FCA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodieApp.Server.Tests", "FoodieApp.Server.Tests\FoodieApp.Server.Tests.csproj", "{F40370EC-C025-490E-BB16-155AD30030AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FoodieApp.Server.Tests", "FoodieApp.Server.Tests\FoodieApp.Server.Tests.csproj", "{F40370EC-C025-490E-BB16-155AD30030AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

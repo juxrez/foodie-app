@@ -1,0 +1,153 @@
+﻿@page "/meals/registernew"
+@using System.Net.Http.Headers;
+
+@inject HttpClient Http
+
+<h3>Register a new meal</h3>
+
+@if(groupMembers is null)
+{
+    <Loading />
+}
+else
+{
+    <ValidateForm @ref="newMealForm" Model="@newMeal" OnValidSubmit="@OnValidSubmit">
+        <div class="row g-3">
+            <div class="col-12 col-sm-6">
+                <BootstrapInput @bind-Value="@newMeal.Name" />
+            </div>
+            <div class="col-12 col-sm-6">
+                <BootstrapInput @bind-Value="@newMeal.Description" />
+            </div>
+            <div class="col-12 col-sm-6">
+                <Select @bind-Value="@newMeal.CookerId" DisplayText="Cooker" >
+                    <Options>
+                        <SelectOption Text="Please select..." Value="" />
+                        @foreach(var member in groupMembers)
+                        {
+                            <SelectOption Text="@member.Name" Value="@member.Id.ToString()"/>
+                        }
+                    </Options>
+                </Select>
+@*                <a style="color:darkblue" @onclick="AssingToMe">Assign to me</a>*@ 
+           </div>
+            <div class="col-12 col-sm-auto">
+                <DateTimePicker TValue="DateTimeOffset?" Value="@newMeal.CookDate" DisplayText="Date" />
+            </div>
+            @*<div class="col-12">
+                <label for="text3" class="form-label">Photo:</label>
+                <InputUpload TValue="string" ShowDeleteButton="true" OnChange="@OnFileChange" OnDelete="@OnFileDelete"></InputUpload>
+            </div>*@ 
+            <div class="col-12">
+                <AvatarUpload Accept="image/"  TValue="string" IsSingle="true" OnChange="@OnFileChange" OnDelete="@(fileName => Task.FromResult(true))"/>
+            </div>
+
+            <div class="col-12">
+                <p>Rating:</p>
+                <Rate Value="@stars" IsDisable="false" Max="5"/>
+                <InputTextArea DisplayName="Review" @bind-Value="@review" />
+
+            </div>
+            
+            @*<div class="col-12 col-sm-6">
+                <BootstrapInput DisplayText="Comments" @bind-Value="@comments" />
+            </div>*@
+            <div class="col-12">
+                <Button ButtonType="@ButtonType.Submit" Text="Submit" />
+            </div>
+
+        </div>
+    </ValidateForm>
+}
+
+
+
+@code {
+    MealViewModel newMeal = new MealViewModel();
+
+    [NotNull]
+    private ValidateForm? newMealForm { get; set; }
+
+    private List<UserViewModel>? groupMembers;
+
+    private int stars = 0;
+    private string review = string.Empty;
+    private string comments = string.Empty;
+    private UploadFile imageFile;
+    private string? fileName = "";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetGroupMembers();
+    }
+
+    private async Task GetGroupMembers()
+    {
+        groupMembers = await Http.GetFromJsonAsync<List<UserViewModel>>("/users/async");
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        if(imageFile is not null)
+        {
+            string imageUrl = await UploadImage();
+            newMeal.Image = imageUrl;
+        }
+
+        newMeal.groupId = 2;
+        newMeal.Reviews.Add(
+            new ReviewViewModel()
+                {
+                    Stars = stars,
+                    Comments = comments,
+                    CreatedDate = DateTime.Today
+                });
+
+
+        var response = await Http.PostAsJsonAsync("meals/add", newMeal);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            // set error message for display, log to console and return
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            System.Console.WriteLine($"There was an error! {errorMessage}");
+            return;
+        }
+
+        var responseMsg = response.StatusCode.ToString();
+
+    }
+
+    private async Task<string> UploadImage()
+    {
+        MultipartFormDataContent dataContent = new MultipartFormDataContent();
+        using var contentFile = new StreamContent(imageFile.File!.OpenReadStream());
+        contentFile.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(imageFile.File.ContentType);
+        dataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+
+        dataContent.Add(
+            content: contentFile,
+            name: imageFile.File.Name,
+            fileName: imageFile.FileName ?? "image"
+        );
+
+        var response = await Http.PostAsync("/meals/image", dataContent);
+        return await response.Content.ReadAsStringAsync() ?? "";
+    }
+
+    private void OnCookerSelected(UserViewModel cooker)
+    {
+        newMeal!.Cooker = cooker;
+    }
+
+    private Task OnFileChange(UploadFile file)
+    {
+        if(file.File is not null)
+        {
+            imageFile = file;
+        }
+
+        return Task.CompletedTask;
+    }
+}

@@ -7,9 +7,9 @@ namespace FoodieApp.Shared.Models
         public double Stars { get; set; }
         public DateTime CreatedDate { get; set; }
 
-        public string Comments { get; set; }
-        public MealViewModel Food { get; set; }
-        public UserViewModel User { get; set; }
+        public string? Comments { get; set; }
+        public MealViewModel? Food { get; set; }
+        public UserViewModel? User { get; set; }
 
     }
 }

@@ -2,41 +2,33 @@
 using FoodieApp.Server.Domain.Interfaces.Repository;
 using FoodieApp.Server.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Immutable;
 
 namespace FoodieApp.Server.Infrastructure.Repositories
 {
-    public class MealRepository //: IMealRepository
+    public class MealRepository :  GenericRepository<Meal>, IMealRepository
     {
         private readonly IDbContextFactory<FoodieAppDbContext> _dbContextFactory;
 
-        public MealRepository(IDbContextFactory<FoodieAppDbContext> dbContextFactory)
+        public MealRepository(IDbContextFactory<FoodieAppDbContext> dbContextFactory) : base(dbContextFactory)
         {
             _dbContextFactory = dbContextFactory;
         }
 
-        ///FirstOrDefaultAsync(
-        //u => u.NormalizedUserName == normalizedUserName,
-        //GetCancellationToken(cancellationToken)
-
-        public async Task Add(Meal meal, CancellationToken cancellationToken = default)
+        public async Task<Meal?> GetMeal(int id, CancellationToken cancellationToken = default)
         {
-            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-            await dbContext.AddAsync(meal, cancellationToken).ConfigureAwait(false);
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+            return dbContext.Meal.AsNoTracking().FirstOrDefault(m => m.Id == id);
         }
 
-        public Task Delete(CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<Meal>> GetAndIncludeAll(CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<Meal> Get(int id, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<Meal>> GetAll(CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
+            await using var dbcontext = await _dbContextFactory.CreateDbContextAsync();
+            return dbcontext.Meal
+                .AsNoTracking()
+                .Include(m => m.User)
+                .Include(m => m.Group)
+                .ToImmutableList();
         }
     }
 }

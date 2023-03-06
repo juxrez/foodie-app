@@ -18,7 +18,8 @@ namespace FoodieApp.Server.Infrastructure.Repositories
         public async Task Add(T entity, CancellationToken cancellationToken = default)
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-            await dbContext.AddAsync(entity, cancellationToken).ConfigureAwait(false);
+            dbContext.Entry(entity).State = EntityState.Added;
+            await dbContext.Set<T>().AddAsync(entity, cancellationToken).ConfigureAwait(false);
             await dbContext.SaveChangesAsync();
         }
 
@@ -34,21 +35,29 @@ namespace FoodieApp.Server.Infrastructure.Repositories
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task<T> Get(int entityId, CancellationToken cancellationToken = default)
+        public async Task<T> Get(int entityId, string[]? includeProperties = default, CancellationToken cancellationToken = default)
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
             var entity = await dbContext!.Set<T>().FindAsync(entityId, cancellationToken) ?? throw new KeyNotFoundException("The entity was not found");
             return entity;
         }
 
-        public async Task<IEnumerable<T>> GetAll(CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<T>> GetAll(string[]? includeProperties = default, CancellationToken cancellationToken = default)
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+            var table = dbContext.Set<T>().AsQueryable();
+            if (includeProperties is null)
+                return table.ToImmutableList();
+            
+            foreach(var property in includeProperties)
+            {
+                table.Include(property);
+            }
 
-            return dbContext.Set<T>().ToImmutableList();
+            return table.ToImmutableList();
         }
 
-        public async Task Update(T entity, CancellationToken cancellationToken)
+        public async Task Update(T entity, CancellationToken cancellationToken = default)
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
             dbContext.Set<T>().Update(entity);

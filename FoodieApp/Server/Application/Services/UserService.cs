@@ -2,6 +2,7 @@
 using FoodieApp.Server.Domain.Entities;
 using FoodieApp.Server.Domain.Interfaces.Repository;
 using FoodieApp.Server.Domain.Interfaces.Services;
+using FoodieApp.Server.Infrastructure.Repositories;
 using FoodieApp.Shared.Models;
 
 namespace FoodieApp.Server.Application.Services
@@ -11,7 +12,7 @@ namespace FoodieApp.Server.Application.Services
         private readonly IRepository<User> _userRepository;
         private readonly IMapper _mapper;
 
-        public UserService(IRepository<User> userRepository, IMapper mapper)
+        public UserService(IMapper mapper, IRepository<User> userRepository)
         {
             _userRepository = userRepository;
             _mapper = mapper;
