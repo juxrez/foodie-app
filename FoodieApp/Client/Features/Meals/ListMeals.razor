@@ -4,9 +4,9 @@
 @inject NavigationManager NavManager
 
 <PageTitle>List of foods</PageTitle>
-<h3>Mealzs</h3>
+<h3>Meals</h3>
 
-@if (foods is null)
+@if (Meals is null)
 {
     <p><em>Loading</em></p>
 }
@@ -19,16 +19,16 @@ else
     </div>
     <div class="row g-3">
 
-        @foreach (var food in foods)
+        @foreach (var meal in Meals)
         {
             <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
-                <Card @onclick="@(e => OnClicked(@food.Id, food.Name))" IsShadow="true" IsCenter="true">
+                <Card @onclick="@(e => OnClicked(meal))" IsShadow="true" IsCenter="true">
                     <BodyTemplate>
-                        <h5>@food.Name</h5>
-                        <ImageViewer Url="@food.Image"
+                        <h5>@meal.Name</h5>
+                        <ImageViewer Url="@meal.Image"
                                      FitMode="ObjectFitMode.Cover"/>
-                        <p class="card-text">@food.Description</p>
-                        @for (int i = 0; i <= @food.AverageStars; i++)
+                        <p class="card-text">@meal.Description</p>
+                        @for (int i = 1; i <= @meal.AverageStars; i++)
                         {
                             <i class="fa-solid fa-star" style="font-size: 1em; margin: .3em; color: orange" aria-hidden="true"></i>
                         }
@@ -45,21 +45,21 @@ else
     [NotNull]
     private DialogService? DialogService { get; set; }
 
-    private MealViewModel[]? foods;
+    private MealViewModel[]? Meals;
 
     private bool IsKeyboard { get; set; }
 
-    private async Task OnClicked(int foodId, string foodName)
+    private async Task OnClicked(MealViewModel meal)
     {
         var options = new DialogOption
         {
-            Title = foodName,
-            BodyContext = foodId,
+            Title = meal.Name,
+            BodyContext = meal.Id,
         };
 
         options.Component = BootstrapDynamicComponent.CreateComponent<DetailsDialogMeals>(new Dictionary<string, object?>()
         {
-            [nameof(DetailsDialogMeals.FoodId)] = foodId
+                [nameof(DetailsDialogMeals.Meal)] = meal
         });
         options.IsScrolling = true;
 
@@ -78,7 +78,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        foods = await Http.GetFromJsonAsync<MealViewModel[]>("meals/async");
+        Meals = await Http.GetFromJsonAsync<MealViewModel[]>("meals/async");
     }
 
     public void Dispose()

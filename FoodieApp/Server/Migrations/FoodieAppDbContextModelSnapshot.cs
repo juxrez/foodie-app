@@ -4,19 +4,16 @@ using FoodieApp.Server.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace FoodieApp.Server.Infrastructure.Data.Migrations
+namespace FoodieApp.Server.Migrations
 {
     [DbContext(typeof(FoodieAppDbContext))]
-    [Migration("20230227183415_AddGroupTable")]
-    partial class AddGroupTable
+    partial class FoodieAppDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -86,6 +83,21 @@ namespace FoodieApp.Server.Infrastructure.Data.Migrations
                     b.ToTable("Group");
                 });
 
+            modelBuilder.Entity("FoodieApp.Server.Domain.Entities.GroupUser", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "GroupId");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("GroupUsers");
+                });
+
             modelBuilder.Entity("FoodieApp.Server.Domain.Entities.Meal", b =>
                 {
                     b.Property<int>("Id")
@@ -94,7 +106,7 @@ namespace FoodieApp.Server.Infrastructure.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ChefId")
+                    b.Property<int>("CookingTime")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Datetime")
@@ -108,7 +120,6 @@ namespace FoodieApp.Server.Infrastructure.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Image")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
@@ -118,11 +129,14 @@ namespace FoodieApp.Server.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("ChefId");
-
                     b.HasIndex("GroupId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Meal");
                 });
@@ -174,7 +188,6 @@ namespace FoodieApp.Server.Infrastructure.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Image")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
@@ -221,23 +234,42 @@ namespace FoodieApp.Server.Infrastructure.Data.Migrations
                     b.Navigation("CreatedBy");
                 });
 
-            modelBuilder.Entity("FoodieApp.Server.Domain.Entities.Meal", b =>
+            modelBuilder.Entity("FoodieApp.Server.Domain.Entities.GroupUser", b =>
                 {
-                    b.HasOne("FoodieApp.Server.Domain.Entities.User", "Chef")
-                        .WithMany()
-                        .HasForeignKey("ChefId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("FoodieApp.Server.Domain.Entities.Group", "Group")
+                        .WithMany("GroupUsers")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("FoodieApp.Server.Domain.Entities.User", "User")
+                        .WithMany("GroupUsers")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FoodieApp.Server.Domain.Entities.Meal", b =>
+                {
                     b.HasOne("FoodieApp.Server.Domain.Entities.Group", "Group")
                         .WithMany("Meals")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Chef");
+                    b.HasOne("FoodieApp.Server.Domain.Entities.User", "User")
+                        .WithMany("Meals")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("Group");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("FoodieApp.Server.Domain.Entities.Review", b =>
@@ -262,15 +294,17 @@ namespace FoodieApp.Server.Infrastructure.Data.Migrations
             modelBuilder.Entity("FoodieApp.Server.Domain.Entities.User", b =>
                 {
                     b.HasOne("FoodieApp.Server.Domain.Entities.Group", null)
-                        .WithMany("Members")
+                        .WithMany("Users")
                         .HasForeignKey("GroupId");
                 });
 
             modelBuilder.Entity("FoodieApp.Server.Domain.Entities.Group", b =>
                 {
+                    b.Navigation("GroupUsers");
+
                     b.Navigation("Meals");
 
-                    b.Navigation("Members");
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("FoodieApp.Server.Domain.Entities.Meal", b =>
@@ -283,6 +317,10 @@ namespace FoodieApp.Server.Infrastructure.Data.Migrations
             modelBuilder.Entity("FoodieApp.Server.Domain.Entities.User", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("GroupUsers");
+
+                    b.Navigation("Meals");
 
                     b.Navigation("Reviews");
                 });

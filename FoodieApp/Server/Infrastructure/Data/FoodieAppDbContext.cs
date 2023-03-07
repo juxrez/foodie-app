@@ -30,7 +30,6 @@ namespace FoodieApp.Server.Infrastructure.Data
             //And run the Configure() Method to register its configuration
             //Each entity should have its on configuration 
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-
             base.OnModelCreating(modelBuilder);
         }
     }

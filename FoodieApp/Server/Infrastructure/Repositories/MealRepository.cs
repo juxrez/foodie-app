@@ -2,6 +2,7 @@
 using FoodieApp.Server.Domain.Interfaces.Repository;
 using FoodieApp.Server.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using System.Collections.Immutable;
 
 namespace FoodieApp.Server.Infrastructure.Repositories
@@ -28,6 +29,8 @@ namespace FoodieApp.Server.Infrastructure.Repositories
                 .AsNoTracking()
                 .Include(m => m.User)
                 .Include(m => m.Group)
+                .Include(m => m.Reviews)!
+                    .ThenInclude(r => r.User)
                 .ToImmutableList();
         }
     }

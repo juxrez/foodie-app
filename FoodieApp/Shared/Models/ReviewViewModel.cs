@@ -8,7 +8,7 @@ namespace FoodieApp.Shared.Models
         public DateTime CreatedDate { get; set; }
 
         public string? Comments { get; set; }
-        public MealViewModel? Food { get; set; }
+        //public MealViewModel? Meal { get; set; }
         public UserViewModel? User { get; set; }
 
     }

@@ -58,6 +58,20 @@ namespace FoodieApp.Server.Controllers
             }
         }
 
+        [HttpGet("carousel")]
+        public async Task<ActionResult<IEnumerable<CarouselMeals>>> GetCarouselMeals()
+        {
+            try
+            {
+                var response = await _mealService.GetCarouselMeals();
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
+        }
+
         // GET food by ID
         [HttpGet("{id}")]
         public async Task<ActionResult<MealViewModel>> Get(int id)
@@ -74,7 +88,7 @@ namespace FoodieApp.Server.Controllers
         // POST api/<ValuesController>
         //Test why is not hitting this endpoint
 
-        [HttpPost("add")]
+        [HttpPost]
         public async Task<ActionResult> AddMeal(MealViewModel newMeal)
         {
             if (!ModelState.IsValid)

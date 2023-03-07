@@ -8,7 +8,9 @@ namespace FoodieApp.Server.Application.Mapping
     {
         public ReviewProfile()
         {
-            CreateMap<Review, ReviewViewModel>().ReverseMap();
+            CreateMap<Review, ReviewViewModel>()
+                .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => src.Description))
+                .ReverseMap();
         }
     }
 }

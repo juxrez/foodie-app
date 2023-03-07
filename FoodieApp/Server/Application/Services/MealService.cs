@@ -3,6 +3,7 @@ using FoodieApp.Server.Domain.Entities;
 using FoodieApp.Server.Domain.Interfaces.Repository;
 using FoodieApp.Server.Domain.Interfaces.Services;
 using FoodieApp.Shared.Models;
+using Microsoft.IdentityModel.Tokens;
 
 namespace FoodieApp.Server.Application.Services
 {
@@ -12,31 +13,42 @@ namespace FoodieApp.Server.Application.Services
         private readonly IMealRepository _mealRepository;
         private readonly IRepository<User> _userRepository;
         private readonly IRepository<Group> _groupRepository;
+        private readonly IRepository<Review> _reviewRepository;
 
 
         public MealService(IMapper mapper,
             IMealRepository mealRepository,
             IRepository<User> userRepository,
-            IRepository<Group> groupRepository)
+            IRepository<Group> groupRepository,
+            IRepository<Review> reviewRepository)
         {
             _mapper = mapper;
             _mealRepository = mealRepository;
             _userRepository = userRepository;
             _groupRepository = groupRepository;
+            _reviewRepository = reviewRepository;
         }
 
         public async Task Add(MealViewModel mealViewModel)
         {
-            var entity = _mapper.Map<Meal>(mealViewModel);
-            //insert user repo
-            //assign chef 
             User chef = await _userRepository.Get(mealViewModel.CookerId);
             Group group = await _groupRepository.Get(mealViewModel.groupId);
-
+            
+            var entity = _mapper.Map<Meal>(mealViewModel);
             entity.Group = group;
             entity.User = chef;
+            
+            var savedMeal = await _mealRepository.Add(entity);
 
-            await _mealRepository.Add(entity);
+            if (!mealViewModel.Reviews.IsNullOrEmpty())
+            {
+                var reviewVM = mealViewModel.Reviews!.FirstOrDefault();
+                var reviewEntity = _mapper.Map<Review>(reviewVM);
+                reviewEntity.Meal = savedMeal;
+                reviewEntity.User = chef;
+
+                await _reviewRepository.Add(reviewEntity);
+            }
         }
 
         public Task<bool> DeleteAsync(int id)
@@ -60,6 +72,14 @@ namespace FoodieApp.Server.Application.Services
             }
 
             throw new KeyNotFoundException("Meal not found");
+        }
+
+        public async Task<IEnumerable<CarouselMeals>> GetCarouselMeals(bool fromCurrentWeek = false)
+        {
+            var meals = await _mealRepository.GetAll();
+            var result = _mapper.Map<List<CarouselMeals>>(meals);
+
+            return result;
         }
 
         public Task<MealViewModel> UpdateAsync(MealViewModel entity)

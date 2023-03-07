@@ -1,9 +1,11 @@
 ﻿@page "/meals/registernew"
 @using System.Net.Http.Headers;
+@inject NavigationManager NavManager
 
 @inject HttpClient Http
 
-<h3>Register a new meal</h3>
+<h3 style="margin:25px 0 0px 0">Register a new meal</h3>
+<Divider />
 
 @if(groupMembers is null)
 {
@@ -37,23 +39,27 @@ else
             @*<div class="col-12">
                 <label for="text3" class="form-label">Photo:</label>
                 <InputUpload TValue="string" ShowDeleteButton="true" OnChange="@OnFileChange" OnDelete="@OnFileDelete"></InputUpload>
-            </div>*@ 
-            <div class="col-12">
-                <AvatarUpload Accept="image/"  TValue="string" IsSingle="true" OnChange="@OnFileChange" OnDelete="@(fileName => Task.FromResult(true))"/>
+            </div>*@
+            <div class="col-12 col-sm-6">
+                @*<AvatarUpload Accept="image/"  TValue="string" IsSingle="true" OnChange="@OnFileChange" OnDelete="@(fileName => Task.FromResult(true))"/>*@
+                <CardUpload TValue="int" IsSingle="true" OnChange="@OnFileChange" DisplayText="nombre.jpg" OnDelete="@(fileName => Task.FromResult(true))"></CardUpload>
             </div>
 
-            <div class="col-12">
-                <p>Rating:</p>
-                <Rate Value="@stars" IsDisable="false" Max="5"/>
-                <InputTextArea DisplayName="Review" @bind-Value="@review" />
+            <div class="col-12 col-sm-6">
+                <label class="form-label">Rate this meal</label>
+                <Rate Value="@stars" IsDisable="false" OnValueChanged="@(value => { stars = value; return Task.FromResult(true); })" Max="5" />
 
+                <div class="col-12">
+                    <Textarea OnValueChanged="@(text => { review = text; return Task.CompletedTask; } )" Value="@review" placeholder="Write your review..." rows="4"></Textarea>
+                </div>
             </div>
             
             @*<div class="col-12 col-sm-6">
                 <BootstrapInput DisplayText="Comments" @bind-Value="@comments" />
             </div>*@
-            <div class="col-12">
-                <Button ButtonType="@ButtonType.Submit" Text="Submit" />
+            <div class="col-12 col-sm-6">
+                <Button Size="@Size.Large" IsOutline="true" ButtonType="@ButtonType.Submit" Text="Submit" style="margin-right:30px" />
+                <Button Size="@Size.Large" IsOutline="true" Color="@Color.Danger" OnClick="@GoBack" Text="Cancel"></Button>
             </div>
 
         </div>
@@ -70,7 +76,7 @@ else
 
     private List<UserViewModel>? groupMembers;
 
-    private int stars = 0;
+    private int stars = 1;
     private string review = string.Empty;
     private string comments = string.Empty;
     private UploadFile imageFile;
@@ -96,16 +102,16 @@ else
         }
 
         newMeal.groupId = 2;
-        newMeal.Reviews.Add(
+        newMeal.Reviews = new() {
             new ReviewViewModel()
-                {
-                    Stars = stars,
-                    Comments = comments,
-                    CreatedDate = DateTime.Today
-                });
+            {
+                Stars = stars,
+                Comments = review,
+                CreatedDate = DateTime.Today
+            }
+        };
 
-
-        var response = await Http.PostAsJsonAsync("meals/add", newMeal);
+        var response = await Http.PostAsJsonAsync("/meals", newMeal);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -114,9 +120,15 @@ else
             System.Console.WriteLine($"There was an error! {errorMessage}");
             return;
         }
+        else
+        {
+            GoBack();
+        }
+    }
 
-        var responseMsg = response.StatusCode.ToString();
-
+    private void GoBack()
+    {
+        NavManager.NavigateTo("/meals");
     }
 
     private async Task<string> UploadImage()

@@ -23,7 +23,7 @@ namespace FoodieApp.Shared.Models
         
         [Required]
         public int CookerId { get; set; }
-        public List<ReviewViewModel>? Reviews { get; set; } = new List<ReviewViewModel>();
+        public List<ReviewViewModel>? Reviews { get; set; }
 
         public string Image { get; set; } = string.Empty;
     }

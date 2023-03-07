@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace FoodieApp.Server.Infrastructure.Data.Migrations
+namespace FoodieApp.Server.Migrations
 {
     [DbContext(typeof(FoodieAppDbContext))]
-    [Migration("20230304153533_UserGroupTableAdded")]
-    partial class UserGroupTableAdded
+    [Migration("20230306231105_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -108,6 +108,9 @@ namespace FoodieApp.Server.Infrastructure.Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CookingTime")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("Datetime")
                         .HasColumnType("datetime2");
