@@ -4,6 +4,7 @@ using FoodieApp.Server.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodieApp.Server.Migrations
 {
     [DbContext(typeof(FoodieAppDbContext))]
-    partial class FoodieAppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230314195123_UserEmailAndIconAdded")]
+    partial class UserEmailAndIconAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

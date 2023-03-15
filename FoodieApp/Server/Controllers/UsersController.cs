@@ -42,10 +42,17 @@ namespace FoodieApp.Server.Controllers
             return "value";
         }
 
-        // POST api/<ValuesController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> Post(UserViewModel newUser)
         {
+            if(!ModelState.IsValid) 
+            {
+                return BadRequest();
+            }
+
+            await _userService.Add(newUser);
+
+            return Ok();
         }
 
         // PUT api/<ValuesController>/5

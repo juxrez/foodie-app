@@ -1,0 +1,119 @@
+﻿@page "/user/add"
+@inject NavigationManager NavManager
+@inject HttpClient Http
+@inject SwalService SwalService
+
+<h3 class="app-title">Add a new user</h3>
+<Divider />
+
+<ValidateForm @ref="newUserForm" Model="NewUser" OnValidSubmit="@OnValidSubmit">
+    <div class="row g-3">
+        <div class="col-12 col-sm-6">
+            <BootstrapInput @bind-Value="NewUser.Name" />
+        </div>
+        <div class="col-12 col-sm-6">
+            <BootstrapInput @bind-Value="NewUser.Email" />
+        </div>
+        <div class="col-12 col-sm-6">
+            <RadioList DisplayText="Select your Icon" Id="radio-icons" IsVertical="false" Items="@selectItems" @bind-Value="@NewUser.Icon" OnSelectedChanged="@OnItemChanged">
+                <ItemTemplate>
+                    @if (context is SelectedItem item)
+                    {
+                        <div>
+                            <i class="@item.Value icon-large"></i>
+                            <span>@item.Text</span>
+                        </div>
+                    }
+                </ItemTemplate>
+            </RadioList>
+        </div>
+        <div class="col-12 col-sm-6 p-1">
+            <div class="d-inline">
+                <Button Size="@Size.Large" IsOutline="true" Color="@Color.Success" ButtonType="@ButtonType.Submit" Text="Submit" />
+            </div>
+            <div class="d-inline">
+                <Button Size="@Size.Large" IsOutline="true" Color="@Color.Danger" OnClick="@GoBack" Text="Cancel" />
+            </div>
+        </div>
+    </div>
+
+</ValidateForm>
+
+@code {
+
+    [NotNull]
+    private ValidateForm? newUserForm { get; set; }
+    UserViewModel NewUser = new UserViewModel();
+
+    private string icon = "";
+    private string[] icons = { "fas fa-user-ninja", "fas fa-person-rifle", 
+        "fas fa-robot", "fas fa-poop", "fas fa-wheelchair-move", 
+        "fas fa-cat", "fas fa-user-secret", "fas fa-user-astronaut", "fas fa-frog", 
+        "fas fa-dragon", "fas fa-ghost", "fas fa-user-injured", "fas fa-crow" };
+
+    private UploadFile? imageFile;
+    private List<SelectedItem> selectItems = new List<SelectedItem>();
+
+    protected override Task OnInitializedAsync()
+    {
+        foreach(var item in icons)
+        {
+            selectItems.Add(
+                new SelectedItem()
+                {
+                    Value = item,
+                    Text = (item.Split('-')).Last()
+                });
+        }
+        return Task.CompletedTask;
+    }
+    private  Task OnItemChanged(IEnumerable<SelectedItem> items, string? selection)
+    {
+        NewUser.Icon = selection;
+        return Task.CompletedTask;
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        var response = await Http.PostAsJsonAsync("users", NewUser);
+        var op = new SwalOption();
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            
+            op.Category = SwalCategory.Error;
+            op.Title = "Oh Snap!";
+            op.Content = $"We were unable to save the user. Please try again :( /r/n {errorMessage}";
+            op.ShowClose = true;
+            
+            //debug
+            System.Console.WriteLine($"There was an error! {errorMessage}");
+            await SwalService.Show(op).ConfigureAwait(false);
+        }
+        else
+        {
+            op.Category = SwalCategory.Success;
+            op.Title = "Success!";
+            op.Content = $"{NewUser.Name} saved successfully, your soul belong to us now.";
+            op.ShowClose = true;
+            
+            await SwalService.Show(op).ConfigureAwait(false);
+            GoBack();
+        }
+    }
+
+    private Task OnFileChange(UploadFile file)
+    {
+        if (file.File is not null)
+        {
+            imageFile = file;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private void GoBack()
+    {
+        NavManager.NavigateTo("/users");
+    }
+}

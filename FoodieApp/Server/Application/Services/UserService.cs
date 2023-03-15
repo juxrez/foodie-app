@@ -18,7 +18,6 @@ namespace FoodieApp.Server.Application.Services
             _mapper = mapper;
         }
 
-        //CREATE USER CONTROLLER AND TEST SERVICE REPO
 
         public async Task Add(UserViewModel userVm)
         {

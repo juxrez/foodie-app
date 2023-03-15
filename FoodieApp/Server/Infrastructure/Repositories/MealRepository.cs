@@ -16,10 +16,17 @@ namespace FoodieApp.Server.Infrastructure.Repositories
             _dbContextFactory = dbContextFactory;
         }
 
-        public async Task<Meal?> GetMeal(int id, CancellationToken cancellationToken = default)
+        public async Task<Meal?> GetAndIncludeMeal(int id, CancellationToken cancellationToken = default)
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-            return dbContext.Meal.AsNoTracking().FirstOrDefault(m => m.Id == id);
+            var query = dbContext.Meal
+                .AsNoTracking()
+                .Include(m => m.User)
+                .Include(m => m.Group)
+                .Include(m => m.Reviews)!
+                    .ThenInclude(r => r.User);
+
+            return query.FirstOrDefault(m => m.Id == id);
         }
 
         public async Task<IEnumerable<Meal>> GetAndIncludeAll(CancellationToken cancellationToken = default)

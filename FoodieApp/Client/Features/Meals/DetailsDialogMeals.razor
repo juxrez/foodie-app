@@ -1,6 +1,7 @@
 ﻿@using FoodieApp.Shared.Models
 @using Console = System.Console
-@inject HttpClient Client
+@inject HttpClient Http
+@inject NavigationManager NavManager
 
 @if (Meal is null)
 {
@@ -17,23 +18,88 @@ else
     <Tab >
         <TabItem Text="Details">
             <div class="justify-content-center d-block">
-                <div class="d-flex justify-content-center position-relative">
+                <div class="flex-row justify-content-center position-relative">
                     <ImageViewer Url="@Meal.Image" FitMode="ObjectFitMode.Cover" />
                 </div>
-                <div class="d-flex justify-content-center position-relative">
-                    @Meal.Description
+                
+                <div class="flex-row p-1">
+                    <p><span class="fas fa-calendar-days"></span> @Meal.CookDate.ToShortDateString()</p>
+
+                    <p>
+                        @for (int i = 1; i <= @Meal.AverageStars; i++)
+                        {
+                            <i class="fa-solid fa-star" style="font-size: 1em; margin: .3em; color: orange" aria-hidden="true"></i>
+                        }
+                    </p>
+                </div>
+                <div class="flex-row justify-content-center">
+                    <Divider Alignment="@Alignment.Center" Text="Description" />
+                    <p class="p-1">@Meal.Description</p>
                 </div>
             </div>
         </TabItem>
         <TabItem Text="Reviews">
             <div class="justify-content-center d-block">
-                <div class="d-flex">
-                    <p>Average:</p>
-                    @for (int i = 1; i <= @Meal.AverageStars; i++)
-                    {
-                        <i class="fa-solid fa-star" style="font-size: 1em; margin: .3em; color: orange" aria-hidden="true"></i>
-                    }
+                <div class="d-flex justify-content-between">
+                    <div class="flex-row">
+                        <p>Average:
+                        @for (int i = 1; i <= @Meal.AverageStars; i++)
+                        {
+                            <i class="fa-solid fa-star" style="font-size: 1em; margin: .3em; color: orange" aria-hidden="true"></i>
+                        }
+                        </p>
+                    </div>
+                    <div>
+                        <Button Color="Color.Primary" OnClick="OnAddReviewClick">Add a review</Button>
+                    </div>
+
                 </div>
+                @if (AddAReview)
+                {
+                    <div class="justify-content-center">
+                        <Card class="cardz" IsCollapsible="false" HeaderText="New Review">
+                            <BodyTemplate>
+                                @if(isSendingReview)
+                                {
+                                    <Loading/>
+                                }
+                                else
+                                {
+                                    <div class="col-12 col-sm-6">
+                                        <Select IsDisabled="@isLoadingMembers" @bind-Value="@newRatingUserId" DisplayText="Review by:">
+                                            <Options>
+                                                <SelectOption Text="Review By:" />
+                                                @if (groupMembers is not null)
+                                                {
+                                                    @foreach (var member in groupMembers)
+                                                    {
+                                                        <SelectOption Text="@member.Name" Value="@member.Id.ToString()" />
+                                                    }
+                                                }
+                                            </Options>
+                                        </Select>
+                                    </div>
+                                    <div class="col-12 col-sm-6 p-1">
+                                        <label class="form-label">Rate this meal:</label>
+                                        <Rate Value="newRating" IsDisable="false" OnValueChanged="@(value => { newRating = value; return Task.CompletedTask; })"></Rate>
+                                    </div>
+                                    <div class="p-1">
+                                        <Textarea rows="4" PlaceHolder="Write your review" OnValueChanged="@(value => { NewReview = value; return Task.CompletedTask; })"  Value="@NewReview"></Textarea>
+                                    </div>
+                                    <div class="d-flex">
+                                        <div class="p-1">
+                                            <Button IsOutline="true" Color="Color.Success" OnClick="@SendReview">Send</Button>
+                                        </div>
+                                        <div class="p-1">
+                                            <Button IsOutline="true" Color="Color.Danger" OnClick="@CleanReview">Cancel</Button>
+                                        </div>
+                                    </div>
+                                }
+                            </BodyTemplate>
+                        </Card>
+                    </div>
+                }
+
                 @if (Meal.Reviews is not null)
                 {
                     <div class="justify-content-center">
@@ -61,22 +127,83 @@ else
 @code {
     [Parameter]
     [EditorRequired]
-    public MealViewModel Meal { get; set; }
-
-    //public MealViewModel? Food { get; set; }
+    public MealViewModel? Meal { get; set; }
     public bool HasError { get; set; }
+
+    public bool AddAReview = false;
+    public string? NewReview;
+    public int newRating = 1;
+    public int newRatingUserId;
+    public bool isLoadingMembers = false;
+    public bool isSendingReview = false;
+
+    private List<UserViewModel>? groupMembers;
 
     protected override async Task OnParametersSetAsync()
     {
         try
         {
-            //Food = await Client.GetFromJsonAsync<MealViewModel>($"meals/{Meal.Id}");
-            HasError = false;
+            Meal = await Http.GetFromJsonAsync<MealViewModel>($"/meals/{Meal.Id}");
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
             throw;
         }
+    }
+
+    private async Task OnAddReviewClick()
+    {
+        AddAReview = !AddAReview;
+        if(groupMembers is null)
+        {
+            isLoadingMembers = true;
+            await GetGroupMembers();
+        }
+    }
+
+    private async Task GetGroupMembers()
+    {
+        groupMembers = await Http.GetFromJsonAsync<List<UserViewModel>>("/users/async");
+        isLoadingMembers = false;
+    }
+
+    private async Task SendReview()
+    {
+        var review = new ReviewViewModel()
+        {
+            Stars = newRating,
+            Comments = NewReview,
+            CreatedDate = DateTime.Now,
+            User = groupMembers.Find(u => u.Id == newRatingUserId)
+        };
+
+        isSendingReview = true;
+        var response = await Http.PostAsJsonAsync($"/meals/{Meal!.Id}/review", review);
+
+        if(response.IsSuccessStatusCode)
+        {
+            var updatedMeal = await response.Content.ReadFromJsonAsync<MealViewModel>();
+            Meal = updatedMeal;
+            await CleanReview();
+
+        }
+        else
+        {
+            // set error message for display, log to console and return
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            System.Console.WriteLine($"There was an error! {errorMessage}");
+            return;
+        }
+    }
+
+    private Task CleanReview()
+    {
+        AddAReview = false;
+        NewReview = "";
+        newRating = 1;
+        newRatingUserId = 0;
+        isSendingReview = false;
+        return Task.CompletedTask;
     }
 }

@@ -1,10 +1,10 @@
 ﻿@page "/meals/registernew"
 @using System.Net.Http.Headers;
 @inject NavigationManager NavManager
-
+@inject SwalService SwalService
 @inject HttpClient Http
 
-<h3 style="margin:25px 0 0px 0">Register a new meal</h3>
+<h3 class="app-title">Register a new meal</h3>
 <Divider />
 
 @if(groupMembers is null)
@@ -31,37 +31,29 @@ else
                         }
                     </Options>
                 </Select>
-@*                <a style="color:darkblue" @onclick="AssingToMe">Assign to me</a>*@ 
            </div>
             <div class="col-12 col-sm-auto">
                 <DateTimePicker TValue="DateTimeOffset?" Value="@newMeal.CookDate" DisplayText="Date" />
             </div>
-            @*<div class="col-12">
+            <div class="col-12">
                 <label for="text3" class="form-label">Photo:</label>
-                <InputUpload TValue="string" ShowDeleteButton="true" OnChange="@OnFileChange" OnDelete="@OnFileDelete"></InputUpload>
-            </div>*@
-            <div class="col-12 col-sm-6">
-                @*<AvatarUpload Accept="image/"  TValue="string" IsSingle="true" OnChange="@OnFileChange" OnDelete="@(fileName => Task.FromResult(true))"/>*@
-                <CardUpload TValue="int" IsSingle="true" OnChange="@OnFileChange" DisplayText="nombre.jpg" OnDelete="@(fileName => Task.FromResult(true))"></CardUpload>
+                <InputUpload Accept=".jpg, .jpeg, .png" TValue="string" ShowDeleteButton="true" OnDelete="@(fileName => Task.FromResult(true))" OnChange="@OnFileChange" ></InputUpload>
             </div>
-
             <div class="col-12 col-sm-6">
                 <label class="form-label">Rate this meal</label>
                 <Rate Value="@stars" IsDisable="false" OnValueChanged="@(value => { stars = value; return Task.FromResult(true); })" Max="5" />
-
                 <div class="col-12">
                     <Textarea OnValueChanged="@(text => { review = text; return Task.CompletedTask; } )" Value="@review" placeholder="Write your review..." rows="4"></Textarea>
                 </div>
             </div>
-            
-            @*<div class="col-12 col-sm-6">
-                <BootstrapInput DisplayText="Comments" @bind-Value="@comments" />
-            </div>*@
-            <div class="col-12 col-sm-6">
-                <Button Size="@Size.Large" IsOutline="true" ButtonType="@ButtonType.Submit" Text="Submit" style="margin-right:30px" />
-                <Button Size="@Size.Large" IsOutline="true" Color="@Color.Danger" OnClick="@GoBack" Text="Cancel"></Button>
+            <div class="col-12 col-sm-6 p-1">
+                <div class="d-inline ">
+                    <Button Size="@Size.Large" IsOutline="true" Color="@Color.Success" ButtonType="@ButtonType.Submit" Text="Submit" />
+                </div>
+                <div class="d-inline p-3">
+                    <Button Size="@Size.Large" IsOutline="true" Color="@Color.Danger" OnClick="@GoBack" Text="Cancel"></Button>
+                </div>
             </div>
-
         </div>
     </ValidateForm>
 }
@@ -79,9 +71,9 @@ else
     private int stars = 1;
     private string review = string.Empty;
     private string comments = string.Empty;
-    private UploadFile imageFile;
+    private IBrowserFile imageFile;
     private string? fileName = "";
-
+    private int cookerId = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -111,6 +103,8 @@ else
             }
         };
 
+        newMeal.Cooker = groupMembers!.Find(c => c.Id == newMeal.CookerId) ?? new UserViewModel();
+
         var response = await Http.PostAsJsonAsync("/meals", newMeal);
 
         if (!response.IsSuccessStatusCode)
@@ -122,6 +116,17 @@ else
         }
         else
         {
+            var op = new SwalOption()
+            {
+                    Category = SwalCategory.Success,
+                    Title = "Saved!",
+                    Content = "Your meal was successfully saved :)",
+                    ShowClose = true
+            };
+
+            await SwalService.Show(op);
+            await Task.Delay(1000);
+
             GoBack();
         }
     }
@@ -133,15 +138,16 @@ else
 
     private async Task<string> UploadImage()
     {
+
         MultipartFormDataContent dataContent = new MultipartFormDataContent();
-        using var contentFile = new StreamContent(imageFile.File!.OpenReadStream());
-        contentFile.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(imageFile.File.ContentType);
+        using var contentFile = new StreamContent(imageFile!.OpenReadStream());
+        contentFile.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(imageFile.ContentType);
         dataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
 
         dataContent.Add(
             content: contentFile,
-            name: imageFile.File.Name,
-            fileName: imageFile.FileName ?? "image"
+            name: imageFile.Name,
+            fileName: imageFile.Name ?? "image"
         );
 
         var response = await Http.PostAsync("/meals/image", dataContent);
@@ -153,13 +159,14 @@ else
         newMeal!.Cooker = cooker;
     }
 
-    private Task OnFileChange(UploadFile file)
+    private async  Task OnFileChange(UploadFile file)
     {
-        if(file.File is not null)
+        string[] imageTypes = new[] { "image/jpeg", "image/png" };
+        if (file?.File is not null && imageTypes.Contains(file?.File?.ContentType))
         {
-            imageFile = file;
+
+            imageFile = await file!.File.RequestImageFileAsync(file.File.ContentType, 500, int.MaxValue);
         }
 
-        return Task.CompletedTask;
     }
 }

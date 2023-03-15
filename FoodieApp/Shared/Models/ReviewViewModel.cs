@@ -10,6 +10,5 @@ namespace FoodieApp.Shared.Models
         public string? Comments { get; set; }
         //public MealViewModel? Meal { get; set; }
         public UserViewModel? User { get; set; }
-
     }
 }

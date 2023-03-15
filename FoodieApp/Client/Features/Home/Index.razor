@@ -2,13 +2,15 @@
 @inject HttpClient Http
 
 <PageTitle>FoodieApp</PageTitle>
-Welcome to <b>Foodie</b> app.
 
-@if(items is not null && items.Any())
+<FoodieApp.Client.Features.Meals.ListMeals>
+
+</FoodieApp.Client.Features.Meals.ListMeals>
+@*@if(items is not null && items.Any())
 {
-    <Divider Alignment="@Alignment.Center" Text="Best Rated"></Divider>
-        <Carousel Width="auto" IsFade="true">
-            @foreach(var item in items)
+    <Divider Alignment="@Alignment.Center" Text="Best Rated"/>
+        <Carousel  Width="auto" IsFade="true">
+            @foreach(var item in items.Where(i => !string.IsNullOrEmpty(i.Image)))
             {
                 <CarouselItem>
                     <CaptionTemplate>
@@ -19,16 +21,16 @@ Welcome to <b>Foodie</b> app.
                     </ChildContent>
                 </CarouselItem>
             }
-     </Carousel>
+        </Carousel>
 }
-
+*@
 
 @code{
     List<CarouselMeals>? items;
 
     protected override async Task OnInitializedAsync()
     {
-        items = await Http.GetFromJsonAsync<List<CarouselMeals>>("/meals/carousel") ?? new List<CarouselMeals>();
+        //items = await Http.GetFromJsonAsync<List<CarouselMeals>>("/meals/carousel") ?? new List<CarouselMeals>();
     }
 }
 

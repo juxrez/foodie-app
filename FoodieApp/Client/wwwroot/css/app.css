@@ -1,5 +1,18 @@
 ﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
+.icon-large {
+    font-size: 25px;
+    margin: 10px;
+}
+#user-icon > i {
+    font-size: 30px;
+}
+.app-title {
+    margin: 25px 0 15px 0;
+}
+.cardz {
+    margin-top: 15px!important;
+}
 .lds-dual-ring {
     display: inline-block;
     width: 80px;

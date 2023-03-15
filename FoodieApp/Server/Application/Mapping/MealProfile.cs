@@ -14,7 +14,7 @@ namespace FoodieApp.Server.Application.Mapping
                 .ForMember(dest => dest.CookDate, opt => opt.MapFrom(src => src.Datetime))
                 .ForMember(dest => dest.Cooker, opt => opt.MapFrom(src => src.User))
                 .ForMember(dest => dest.CookerId, opt => opt.MapFrom(src => src.UserId))
-                .ForMember(dest => dest.AverageStars, opt => opt.MapFrom(src => (src.Reviews.Count > 0 ? src.Reviews.Sum(r => r.Stars) : 1)))
+                .ForMember(dest => dest.AverageStars, opt => opt.MapFrom(src => (src.Reviews.Count > 0 ? (src.Reviews.Sum(r => r.Stars)/src.Reviews.Count()) : 1)))
 
                 .ForMember(dest => dest.groupId, opt => opt.MapFrom(src => src.GroupId));
 

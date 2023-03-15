@@ -4,16 +4,16 @@
 @inject NavigationManager NavManager
 
 <PageTitle>List of foods</PageTitle>
-<h3>Meals</h3>
+<h3 class="app-title">Meals</h3>
 
 @if (Meals is null)
 {
-    <p><em>Loading</em></p>
+    <Loading />
 }
 else
 {
     <div style="margin:20px 0 20px 0 "class="col-6 col-sm-4 col-md-3 col-lg-auto">
-        <Button OnClick="GoToCreateNewMeal" IsOutline="true" Icon="fas fa-bowl-rice" Color="Color.Success">
+        <Button OnClick="GoToCreateNewMeal" IsOutline="true" Icon="fas fa-bowl-rice" Color="Color.Primary">
         Register new meal
         </Button>
     </div>
@@ -52,10 +52,11 @@ else
     private async Task OnClicked(MealViewModel meal)
     {
         var options = new DialogOption
-        {
-            Title = meal.Name,
-            BodyContext = meal.Id,
-        };
+            {
+                Title = meal.Name,
+                BodyContext = meal.Id,
+                OnCloseAsync = async () => await GetMeals()
+            };
 
         options.Component = BootstrapDynamicComponent.CreateComponent<DetailsDialogMeals>(new Dictionary<string, object?>()
         {
@@ -65,6 +66,7 @@ else
 
         await DialogService.Show(options);
     }
+
 
     private void GoToCreateNewMeal()
     {
@@ -78,7 +80,14 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await GetMeals();
+    }
+
+    private async Task GetMeals()
+    {
+        Meals = null;
         Meals = await Http.GetFromJsonAsync<MealViewModel[]>("meals/async");
+        StateHasChanged();
     }
 
     public void Dispose()

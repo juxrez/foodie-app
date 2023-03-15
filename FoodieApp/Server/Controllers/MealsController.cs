@@ -1,12 +1,8 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Azure.Storage.Sas;
 using FoodieApp.Server.Domain.Interfaces.Services;
 using FoodieApp.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Reflection.Metadata;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace FoodieApp.Server.Controllers
 {
@@ -15,7 +11,7 @@ namespace FoodieApp.Server.Controllers
     public class MealsController : ControllerBase
     {
         private const string BLOB_KEY = "Blob";
-        private const string BLOB_CONTAINER_NAME = "alexiscontainer";
+        private const string BLOB_CONTAINER_NAME = "foodieappcontainer";
         private readonly IConfiguration _config;
         private readonly IMealService _mealService;
 
@@ -42,21 +38,21 @@ namespace FoodieApp.Server.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<MealViewModel>>> GetAllFoods()
-        {
-            try
-            {
-                var foods = await _mealService.GetAllAsync();
-                return await GetFoods();
+        //[HttpGet]
+        //public async Task<ActionResult<List<MealViewModel>>> GetAllFoods()
+        //{
+        //    try
+        //    {
+        //        var foods = await _mealService.GetAllAsync();
+        //        return await GetMockedFoods();
 
-            }
-            catch (Exception ex)
-            {
+        //    }
+        //    catch (Exception ex)
+        //    {
 
-                return BadRequest();
-            }
-        }
+        //        return BadRequest();
+        //    }
+        //}
 
         [HttpGet("carousel")]
         public async Task<ActionResult<IEnumerable<CarouselMeals>>> GetCarouselMeals()
@@ -165,6 +161,20 @@ namespace FoodieApp.Server.Controllers
             
         }
 
+        [HttpPost("{mealId:int}/review")]
+        public async Task<ActionResult<MealViewModel>> AddReviewToMeal(int mealId, ReviewViewModel review)
+        {
+            try
+            {
+                var result = await _mealService.AddReviewToMeal(mealId, review);
+                return result;
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest();
+            }
+        }
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
@@ -177,7 +187,7 @@ namespace FoodieApp.Server.Controllers
         {
         }
 
-        private Task<List<MealViewModel>> GetFoods()
+        private Task<List<MealViewModel>> GetMockedFoods()
         {
             var foods = new List<MealViewModel>()
             {

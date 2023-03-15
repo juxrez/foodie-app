@@ -64,7 +64,7 @@ namespace FoodieApp.Server.Application.Services
 
         public async Task<MealViewModel> GetAsync(int id)
         {
-            var meal = await _mealRepository.Get(id);
+            var meal = await _mealRepository.GetAndIncludeMeal(id);
             if (meal is not null)
             {
                 var response = _mapper.Map<MealViewModel>(meal);
@@ -80,6 +80,23 @@ namespace FoodieApp.Server.Application.Services
             var result = _mapper.Map<List<CarouselMeals>>(meals);
 
             return result;
+        }
+
+        public async Task<MealViewModel> AddReviewToMeal(int mealId, ReviewViewModel review)
+        {
+            if(mealId == 0 || review is null)
+            {
+                throw new InvalidOperationException("Invalid Request");
+            }
+
+            var reviewEntity = _mapper.Map<Review>(review);
+            reviewEntity.CreatedDate = DateTime.Now;
+            reviewEntity.MealId = mealId;
+            reviewEntity.UserId = review.User.Id;
+            _reviewRepository.Add(reviewEntity);
+
+            var updatedMeal = await GetAsync(mealId);
+            return updatedMeal;
         }
 
         public Task<MealViewModel> UpdateAsync(MealViewModel entity)
