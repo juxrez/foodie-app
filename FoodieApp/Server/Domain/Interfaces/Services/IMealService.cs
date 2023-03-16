@@ -1,5 +1,4 @@
-﻿using FoodieApp.Server.Domain.Entities;
-using FoodieApp.Shared.Models;
+﻿using FoodieApp.Shared.Models;
 
 namespace FoodieApp.Server.Domain.Interfaces.Services
 {

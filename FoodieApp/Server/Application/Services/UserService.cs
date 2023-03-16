@@ -40,7 +40,7 @@ namespace FoodieApp.Server.Application.Services
         public async Task<List<UserViewModel>> GetAllAsync()
         {
             var result = await _userRepository.GetAll();
-            var mappedResult = _mapper.Map<List<UserViewModel>>(result);
+            var mappedResult = _mapper.Map<List<UserViewModel>>(result.Where(u => !u.IsDeleted));
 
             return mappedResult;
         }

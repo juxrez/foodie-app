@@ -35,7 +35,7 @@ else
             <div class="col-12 col-sm-auto">
                 <DateTimePicker TValue="DateTimeOffset?" Value="@newMeal.CookDate" DisplayText="Date" />
             </div>
-            <div class="col-12">
+            <div class="col-md-6 col-sm-12">
                 <label for="text3" class="form-label">Photo:</label>
                 <InputUpload Accept=".jpg, .jpeg, .png" TValue="string" ShowDeleteButton="true" OnDelete="@(fileName => Task.FromResult(true))" OnChange="@OnFileChange" ></InputUpload>
             </div>
@@ -46,13 +46,13 @@ else
                     <Textarea OnValueChanged="@(text => { review = text; return Task.CompletedTask; } )" Value="@review" placeholder="Write your review..." rows="4"></Textarea>
                 </div>
             </div>
-            <div class="col-12 col-sm-6 p-1">
-                <div class="d-inline ">
-                    <Button Size="@Size.Large" IsOutline="true" Color="@Color.Success" ButtonType="@ButtonType.Submit" Text="Submit" />
-                </div>
-                <div class="d-inline p-3">
-                    <Button Size="@Size.Large" IsOutline="true" Color="@Color.Danger" OnClick="@GoBack" Text="Cancel"></Button>
-                </div>
+        </div>
+        <div class="flex-row col-6 mt-3 justi">
+            <div class="d-inline ">
+                <Button Size="@Size.Large" IsOutline="true" Color="@Color.Success" ButtonType="@ButtonType.Submit" Text="Submit" />
+            </div>
+            <div class="d-inline p-3">
+                <Button Size="@Size.Large" IsOutline="true" Color="@Color.Danger" OnClick="@GoBack" Text="Cancel"></Button>
             </div>
         </div>
     </ValidateForm>
@@ -111,6 +111,16 @@ else
         {
             // set error message for display, log to console and return
             var errorMessage = await response.Content.ReadAsStringAsync();
+            var op = new SwalOption()
+            {
+                Category = SwalCategory.Error,
+                Title = "Oh Snap!",
+                Content = $"There was an error: {errorMessage}",
+                ShowClose = true
+            };
+
+            await SwalService.Show(op);
+
             System.Console.WriteLine($"There was an error! {errorMessage}");
             return;
         }

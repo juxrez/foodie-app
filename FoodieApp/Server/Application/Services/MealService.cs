@@ -59,7 +59,7 @@ namespace FoodieApp.Server.Application.Services
         public async Task<List<MealViewModel>> GetAllAsync()
         {
             var meals = await  _mealRepository.GetAndIncludeAll();
-            return _mapper.Map<List<MealViewModel>>(meals);
+            return _mapper.Map<List<MealViewModel>>(meals.Where(m => !m.IsDeleted));
         }
 
         public async Task<MealViewModel> GetAsync(int id)
@@ -77,7 +77,7 @@ namespace FoodieApp.Server.Application.Services
         public async Task<IEnumerable<CarouselMeals>> GetCarouselMeals(bool fromCurrentWeek = false)
         {
             var meals = await _mealRepository.GetAll();
-            var result = _mapper.Map<List<CarouselMeals>>(meals);
+            var result = _mapper.Map<List<CarouselMeals>>(meals.Where(m => !m.IsDeleted));
 
             return result;
         }

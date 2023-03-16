@@ -1,5 +1,17 @@
 ﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
+
+.image-container-details > div > img {
+    max-height: 2000px;
+    max-width: auto;
+    object-fit: unset;
+}
+
+.image-container > div > img {
+    max-height: 200px;
+    max-width: auto;
+    object-fit: cover;
+}
 .icon-large {
     font-size: 25px;
     margin: 10px;

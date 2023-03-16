@@ -25,8 +25,10 @@ else
                 <Card @onclick="@(e => OnClicked(meal))" IsShadow="true" IsCenter="true">
                     <BodyTemplate>
                         <h5>@meal.Name</h5>
-                        <ImageViewer Url="@meal.Image"
-                                     FitMode="ObjectFitMode.Cover"/>
+                        <div class="image-container">
+                            <ImageViewer Url="@meal.Image"
+                                 FitMode="ObjectFitMode.Cover" />
+                        </div>
                         <p class="card-text">@meal.Description</p>
                         @for (int i = 1; i <= @meal.AverageStars; i++)
                         {
