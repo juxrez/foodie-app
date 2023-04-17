@@ -20,7 +20,7 @@ namespace FoodieApp.Server.Infrastructure.Repositories
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
             
             dbContext.Entry(entity).State = EntityState.Added;
-            await dbContext.Set<T>().AddAsync(entity, cancellationToken).ConfigureAwait(false);
+            await dbContext.AddAsync(entity, cancellationToken).ConfigureAwait(false);
             await dbContext.SaveChangesAsync();
             
             return entity;
