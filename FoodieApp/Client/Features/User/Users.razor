@@ -1,0 +1,53 @@
+﻿@page "/users"
+@inject HttpClient Http
+@inject NavigationManager NavManager
+<h3 class="app-title">Users</h3>
+
+@if(users is null)
+{
+   <Loading/>
+}
+else
+{
+    <div style="margin:20px 0 20px 0 " class="col-6 col-sm-4 col-md-3 col-lg-auto">
+        <Button OnClick="GoToCreateNewUser" IsOutline="true" Icon="fas fa-person-circle-plus" Color="Color.Primary">
+             Add User
+        </Button>
+    </div>
+    <Row ItemsPerRow="ItemsPerRow.Three">
+        @foreach(var user in users)
+        {
+            <Card IsCenter="true">
+                <BodyTemplate>
+                    <h5>@user.Name</h5>
+                    @if(string.IsNullOrEmpty(user.Image))
+                    {
+                        <Avatar IsIcon="true" IsCircle="true" Size="Size.ExtraExtraLarge" id="user-icon" Icon="@user.Icon" />
+                    }
+                    else
+                    {
+                        <Avatar Url="@user.Image" IsCircle="true" Size="Size.ExtraExtraLarge" />
+                    }
+                    @*<p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                    <a class="btn btn-primary">Go somewhere</a>*@
+                </BodyTemplate>
+                <FooterTemplate>
+                </FooterTemplate>
+            </Card>
+        }
+    </Row>
+}
+
+@code {
+    private List<UserViewModel>? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await Http.GetFromJsonAsync<List<UserViewModel>>("users/async") ?? null;
+    }
+
+    private void GoToCreateNewUser()
+    {
+        NavManager.NavigateTo("/user/add");
+    }
+}

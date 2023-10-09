@@ -1,0 +1,98 @@
+﻿@page "/meals"
+@implements IDisposable
+@inject HttpClient Http
+@inject NavigationManager NavManager
+
+<PageTitle>List of foods</PageTitle>
+<h3 class="app-title">Meals</h3>
+
+@if (Meals is null)
+{
+    <Loading />
+}
+else
+{
+    <div style="margin:20px 0 20px 0 "class="col-6 col-sm-4 col-md-3 col-lg-auto">
+        <Button OnClick="GoToCreateNewMeal" IsOutline="true" Icon="fas fa-bowl-rice" Color="Color.Primary">
+        Register new meal
+        </Button>
+    </div>
+    <div class="row g-3">
+
+        @foreach (var meal in Meals)
+        {
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
+                <Card @onclick="@(e => OnClicked(meal))" IsShadow="true" IsCenter="true">
+                    <BodyTemplate>
+                        <h5>@meal.Name</h5>
+                        <div class="image-container">
+                            <ImageViewer Url="@meal.Image"
+                                 FitMode="ObjectFitMode.Cover" />
+                        </div>
+                        <p class="card-text">@meal.Description</p>
+                        @for (int i = 1; i <= @meal.AverageStars; i++)
+                        {
+                            <i class="fa-solid fa-star" style="font-size: 1em; margin: .3em; color: orange" aria-hidden="true"></i>
+                        }
+                    </BodyTemplate>
+                </Card>
+            </div>
+        }
+    </div>
+
+}
+
+@code {
+    [Inject]
+    [NotNull]
+    private DialogService? DialogService { get; set; }
+
+    private MealViewModel[]? Meals;
+
+    private bool IsKeyboard { get; set; }
+
+    private async Task OnClicked(MealViewModel meal)
+    {
+        var options = new DialogOption
+            {
+                Title = meal.Name,
+                BodyContext = meal.Id,
+                OnCloseAsync = async () => await GetMeals()
+            };
+
+        options.Component = BootstrapDynamicComponent.CreateComponent<DetailsDialogMeals>(new Dictionary<string, object?>()
+        {
+                [nameof(DetailsDialogMeals.Meal)] = meal
+        });
+        options.IsScrolling = true;
+
+        await DialogService.Show(options);
+    }
+
+
+    private void GoToCreateNewMeal()
+    {
+        NavManager.NavigateTo("/meals/registernew");
+    }
+
+    private void OnClickKeyboard()
+    {
+        IsKeyboard = !IsKeyboard;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetMeals();
+    }
+
+    private async Task GetMeals()
+    {
+        Meals = null;
+        Meals = await Http.GetFromJsonAsync<MealViewModel[]>("meals/async");
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+    }
+}

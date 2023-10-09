@@ -1,0 +1,182 @@
+﻿@page "/meals/registernew"
+@using System.Net.Http.Headers;
+@inject NavigationManager NavManager
+@inject SwalService SwalService
+@inject HttpClient Http
+
+<h3 class="app-title">Register a new meal</h3>
+<Divider />
+
+@if(groupMembers is null)
+{
+    <Loading />
+}
+else
+{
+    <ValidateForm @ref="newMealForm" Model="@newMeal" OnValidSubmit="@OnValidSubmit">
+        <div class="row g-3">
+            <div class="col-12 col-sm-6">
+                <BootstrapInput @bind-Value="@newMeal.Name" />
+            </div>
+            <div class="col-12 col-sm-6">
+                <BootstrapInput @bind-Value="@newMeal.Description" />
+            </div>
+            <div class="col-12 col-sm-6">
+                <Select @bind-Value="@newMeal.CookerId" DisplayText="Cooker" >
+                    <Options>
+                        <SelectOption Text="Please select..." Value="" />
+                        @foreach(var member in groupMembers)
+                        {
+                            <SelectOption Text="@member.Name" Value="@member.Id.ToString()"/>
+                        }
+                    </Options>
+                </Select>
+           </div>
+            <div class="col-12 col-sm-auto">
+                <DateTimePicker TValue="DateTimeOffset?" Value="@newMeal.CookDate" DisplayText="Date" />
+            </div>
+            <div class="col-md-6 col-sm-12">
+                <label for="text3" class="form-label">Photo:</label>
+                <InputUpload Accept=".jpg, .jpeg, .png" TValue="string" ShowDeleteButton="true" OnDelete="@(fileName => Task.FromResult(true))" OnChange="@OnFileChange" ></InputUpload>
+            </div>
+            <div class="col-12 col-sm-6">
+                <label class="form-label">Rate this meal</label>
+                <Rate Value="@stars" IsDisable="false" OnValueChanged="@(value => { stars = value; return Task.FromResult(true); })" Max="5" />
+                <div class="col-12">
+                    <Textarea OnValueChanged="@(text => { review = text; return Task.CompletedTask; } )" Value="@review" placeholder="Write your review..." rows="4"></Textarea>
+                </div>
+            </div>
+        </div>
+        <div class="flex-row col-6 mt-3 ">
+            <div class="d-inline ">
+                <Button Size="@Size.Large" IsOutline="true" Color="@Color.Success" ButtonType="@ButtonType.Submit" Text="Submit" />
+            </div>
+            <div class="d-inline p-3">
+                <Button Size="@Size.Large" IsOutline="true" Color="@Color.Danger" OnClick="@GoBack" Text="Cancel"></Button>
+            </div>
+        </div>
+    </ValidateForm>
+}
+
+
+
+@code {
+    MealViewModel newMeal = new MealViewModel();
+
+    [NotNull]
+    private ValidateForm? newMealForm { get; set; }
+
+    private List<UserViewModel>? groupMembers;
+
+    private int stars = 1;
+    private string review = string.Empty;
+    private string comments = string.Empty;
+    private IBrowserFile imageFile;
+    private string? fileName = "";
+    private int cookerId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetGroupMembers();
+    }
+
+    private async Task GetGroupMembers()
+    {
+        groupMembers = await Http.GetFromJsonAsync<List<UserViewModel>>("/users/async");
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        if(imageFile is not null)
+        {
+            string imageUrl = await UploadImage();
+            newMeal.Image = imageUrl;
+        }
+
+        newMeal.groupId = 2;
+        newMeal.Reviews = new() {
+            new ReviewViewModel()
+            {
+                Stars = stars,
+                Comments = review,
+                CreatedDate = DateTime.Today
+            }
+        };
+
+        newMeal.Cooker = groupMembers!.Find(c => c.Id == newMeal.CookerId) ?? new UserViewModel();
+
+        var response = await Http.PostAsJsonAsync("/meals", newMeal);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            // set error message for display, log to console and return
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            var op = new SwalOption()
+            {
+                Category = SwalCategory.Error,
+                Title = "Oh Snap!",
+                Content = $"There was an error: {errorMessage}",
+                ShowClose = true
+            };
+
+            await SwalService.Show(op);
+
+            System.Console.WriteLine($"There was an error! {errorMessage}");
+            return;
+        }
+        else
+        {
+            var op = new SwalOption()
+            {
+                    Category = SwalCategory.Success,
+                    Title = "Saved!",
+                    Content = "Your meal was successfully saved :)",
+                    ShowClose = true
+            };
+
+            await SwalService.Show(op);
+            await Task.Delay(1000);
+
+            GoBack();
+        }
+    }
+
+    private void GoBack()
+    {
+        NavManager.NavigateTo("/meals");
+    }
+
+    private async Task<string> UploadImage()
+    {
+
+        MultipartFormDataContent dataContent = new MultipartFormDataContent();
+        using var contentFile = new StreamContent(imageFile!.OpenReadStream());
+        contentFile.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(imageFile.ContentType);
+        dataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+
+        dataContent.Add(
+            content: contentFile,
+            name: imageFile.Name,
+            fileName: imageFile.Name ?? "image"
+        );
+
+        var response = await Http.PostAsync("/meals/image", dataContent);
+        return await response.Content.ReadAsStringAsync() ?? "";
+    }
+
+    private void OnCookerSelected(UserViewModel cooker)
+    {
+        newMeal!.Cooker = cooker;
+    }
+
+    private async  Task OnFileChange(UploadFile file)
+    {
+        string[] imageTypes = new[] { "image/jpeg", "image/png" };
+        if (file?.File is not null && imageTypes.Contains(file?.File?.ContentType))
+        {
+
+            imageFile = await file!.File.RequestImageFileAsync(file.File.ContentType, 500, int.MaxValue);
+        }
+
+    }
+}
